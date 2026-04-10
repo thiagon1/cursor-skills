@@ -1,14 +1,31 @@
 # Cursor Skills
 
-Skills personalizadas para o Cursor AI, focadas em desenvolvimento VTEX e automações de workflow.
+Skills personalizadas para o Cursor AI, focadas em desenvolvimento VTEX, deco.cx e automações de workflow.
 
 ## Skills disponíveis
+
+### VTEX
 
 | Skill | Descrição |
 |---|---|
 | **vtex-checkout** | Customização do VTEX Checkout v6 — vtex.js, orderForm, eventos, proxy local para testes |
 | **vtex-io-component** | Criação de componentes React para VTEX IO com CSS Handles, Site Editor e interfaces.json |
 | **vtex-io-node-graphql** | Backend Node.js e GraphQL no VTEX IO — resolvers, clients, mutations e integração com React |
+
+### deco.cx
+
+| Skill | Descrição |
+|---|---|
+| **deco-section** | Criação de Sections — componentes Preact com Props tipadas que geram formulários no Admin |
+| **deco-loader** | Loaders e Inline Loaders — data fetching server-side com Props configuráveis |
+| **deco-island** | Islands — componentes interativos com hidratação client-side, signals e invoke API |
+| **deco-app** | Criação de Apps customizadas — mod.ts, actions, workflows, loaders e state compartilhado |
+| **deco-vtex** | Integração deco.cx + VTEX — PLP, PDP, carrinho, busca e operações via invoke |
+
+### Automações
+
+| Skill | Descrição |
+|---|---|
 | **runrunit-pr-commit** | Automação: busca dados de tasks no Runrun.it, cria commits semânticos e abre PRs no GitHub |
 
 ## Como usar
@@ -40,4 +57,5 @@ O Cursor detecta automaticamente qualquer pasta com `SKILL.md` dentro de `.curso
 
 - [Cursor IDE](https://cursor.com/) com suporte a Agent Skills
 - Para skills VTEX: acesso ao ambiente VTEX da loja
+- Para skills deco.cx: [Deno](https://deno.land/) instalado + projeto deco.cx
 - Para runrunit-pr-commit: MCP do Runrun.it configurado + GitHub CLI (`gh`)
