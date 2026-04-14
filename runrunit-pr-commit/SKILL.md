@@ -1,26 +1,212 @@
 ---
 name: runrunit-pr-commit
-description: Fetches Runrun.it task data via MCP, creates semantic git commits, opens GitHub PRs using the project template, and posts a summary comment on the task. Use when the user provides a Runrun.it task link and wants to commit, open a PR, or document the task.
+description: Full task lifecycle via Runrun.it — start tasks (fetch data, create branch, plan execution), develop with deco.cx/VTEX skills, and finish (commit, PR, comment, deliver). Use when the user provides a Runrun.it task link and wants to start, develop, commit, open a PR, or document a task.
 ---
 
-# Runrun.it → Commit + PR + Comment
+# Runrun.it — Task Lifecycle (Start → Develop → Finish)
 
-Workflow that fetches task data from Runrun.it, creates semantic commits, opens a GitHub PR with the project template, and optionally comments on the task with the PR link.
+Two main flows:
+
+- **Flow A — Start Task:** fetch task data, verify workspace, create branch, analyze requirements, plan execution
+- **Flow B — Finish Task:** create commits, open PR, comment on task, deliver
 
 ## Input
 
 | Campo | Obrigatório | Descrição |
 |-------|-------------|-----------|
-| **Link da task** | Sim | URL da tarefa (ex.: `https://runrun.it/en-US/tasks/13631`) ou ID numérico |
-| **URLs antes/depois** | Não | Para evidências visuais no PR e na task (Template A) |
+| **Link da task** | Sim | URL da tarefa (ex.: `https://runrun.it/en-US/tasks/14003`) ou ID numérico |
+| **URLs antes/depois** | Não | Para evidências visuais no PR e na task (Flow B, Template A) |
 | **Branch destino** | Não | Padrão: `development` |
-| **Link da PR** | Não | URL da Pull Request (Bitbucket ou GitHub). Se não fornecido, é criado no Step 4. |
+| **Link da PR** | Não | URL da Pull Request (Bitbucket ou GitHub). Se não fornecido, é criado no Step F4. |
 | **Link do workspace** | Não | URL de validação (ex.: `https://task14002--lojamm.myvtex.com/lancamentos`) |
 | **Links extras** | Não | GTM, Figma, documentos ou qualquer link adicional relevante |
 | **Prints/evidências** | Não | URLs de screenshots (prnt.sc, Cloudinary, etc.) |
 | **Descrição da entrega** | Não | O que foi entregue, em linguagem de negócio. Se não fornecido, é derivado da task. |
 
-## Step 1 — Fetch task data from Runrun.it
+---
+
+# Flow A — Start Task (Iniciar tarefa)
+
+Triggered when the user says "iniciar tarefa", "começar task", "pega essa task", or provides a Runrun.it link asking to start work.
+
+## Step A1 — Fetch task data from Runrun.it
+
+Extract the numeric ID from the URL (e.g. `.../tasks/14003` → `14003`).
+
+Call `runrunit_get_task` via MCP:
+
+```
+server: user-runrunit-mcp
+toolName: runrunit_get_task
+arguments: { "id": <task_id> }
+```
+
+From the response, extract:
+- `title` — task title
+- `id` — task ID
+- `project_id` / `project_name` — project context (used to identify the correct workspace)
+- `responsible_name` — assigned developer
+- `tags` — tags to determine change type and technology
+- `description` — detailed requirements
+- `board_stage_name` — current stage
+
+Also fetch comments and subtasks for full context:
+
+```
+server: user-runrunit-mcp
+toolName: runrunit_list_task_comments
+arguments: { "task_id": <task_id> }
+```
+
+```
+server: user-runrunit-mcp
+toolName: runrunit_list_subtasks
+arguments: { "task_id": <task_id> }
+```
+
+## Step A2 — Verify workspace / project folder
+
+Before creating a branch, confirm the user is in the correct project folder.
+
+1. Check the current working directory (`pwd` or workspace path from Cursor context).
+2. Cross-reference with the `project_name` from the task to identify the expected repository.
+3. Look for project indicators: `manifest.json` (VTEX IO), `deno.json`/`mod.ts` (deco.cx), `package.json`, `.git` folder.
+
+**If the workspace looks wrong:**
+- STOP and ask the user: "O workspace atual é `{cwd}`, mas a task é do projeto `{project_name}`. Deseja continuar aqui ou trocar para outro diretório?"
+- Do NOT proceed until the user confirms.
+
+**If the workspace looks correct:**
+- Inform the user: "Workspace confirmado: `{cwd}` ({project_name})"
+
+## Step A3 — Create or checkout branch
+
+Branch naming convention: `task{id}` (e.g. `task14003`).
+
+1. Run `git status` to check for uncommitted changes.
+   - If there are uncommitted changes, STOP and ask: "Existem alterações não commitadas na branch atual. Deseja fazer stash, commit ou descartar antes de trocar?"
+   - Wait for user confirmation before proceeding.
+
+2. Check if the branch already exists:
+   ```
+   git branch --list task{id}
+   git branch -r --list "*/task{id}"
+   ```
+
+3. **If branch exists locally:** ask the user: "A branch `task{id}` já existe. Deseja fazer checkout para ela?"
+   - On confirmation: `git checkout task{id}`
+
+4. **If branch exists only on remote:** ask: "A branch `task{id}` existe no remoto. Deseja fazer checkout?"
+   - On confirmation: `git checkout -b task{id} origin/task{id}`
+
+5. **If branch does not exist:** ask: "Vou criar a branch `task{id}` a partir de `{current_branch}`. Confirma?"
+   - The base branch should typically be `development` or `main` — ask if unclear.
+   - On confirmation: `git checkout -b task{id} {base_branch}`
+
+6. Confirm to the user: "Branch `task{id}` pronta. Trabalhando a partir de `{base_branch}`."
+
+## Step A4 — Analyze task and identify technology / skills
+
+Parse the task `title`, `description`, `tags`, and `comments` to determine:
+
+### Technology detection
+
+| Signal in task data | Technology | Relevant skills |
+|---|---|---|
+| `vtex`, `vtex io`, `store-theme`, `site editor`, `shelf`, `checkout` | VTEX IO | `vtex-io-component`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config` |
+| `deco`, `deco.cx`, `fresh`, `section`, `loader`, `island` | deco.cx | `deco-section`, `deco-loader`, `deco-island`, `deco-app`, `deco-vtex` |
+| `checkout`, `orderForm`, `checkout6-custom` | VTEX Checkout | `vtex-checkout`, `vtex-checkout-config` |
+| `graphql`, `node`, `resolver`, `client`, `middleware` | VTEX IO Node/GraphQL | `vtex-io-node-graphql` |
+
+### Task type detection
+
+| Signal | Type | Approach |
+|---|---|---|
+| `criar`, `novo`, `adicionar`, `implementar` | New feature | Create new files/components |
+| `ajustar`, `corrigir`, `fix`, `bug` | Fix/adjustment | Find and modify existing code |
+| `alterar`, `mudar`, `atualizar`, `layout` | Update | Modify existing components |
+| `configurar`, `config`, `setup` | Configuration | Update config files, settings |
+
+### Codebase exploration
+
+Before presenting the plan, explore the project structure to understand what already exists:
+1. List key directories (`ls`, `Glob`) to map the project layout.
+2. If VTEX IO: check `manifest.json` for app name/version, `store/` for blocks, `react/` for components.
+3. If deco.cx: check `deno.json`, `sections/`, `loaders/`, `islands/`, `apps/`.
+4. Search for files related to the task (e.g., if task mentions "shelf", search for shelf-related components).
+
+## Step A5 — Present plan and ask for permission
+
+**CRITICAL: NEVER start coding without user approval.**
+
+Present a structured plan to the user:
+
+```
+Tarefa: TASK-{id} — {title}
+Projeto: {project_name}
+Branch: task{id}
+Tecnologia: {detected technology}
+
+Plano de execução:
+1. {Step 1 — what will be created/modified and why}
+2. {Step 2 — ...}
+3. {Step 3 — ...}
+
+Arquivos que serão criados:
+- {path/to/new/file.tsx} — {brief description}
+
+Arquivos que serão modificados:
+- {path/to/existing/file.tsx} — {what changes}
+
+Skills que serão utilizadas:
+- {skill name} — {why}
+
+Posso prosseguir com esse plano?
+```
+
+Wait for the user to confirm, adjust, or reject the plan.
+
+## Step A6 — Execute task with appropriate skills
+
+After user approval, execute the plan step by step:
+
+1. **Read the relevant skill** before starting (e.g., `deco-section`, `vtex-io-component`).
+2. **Follow the skill instructions** to create/modify files.
+3. **After each significant change**, briefly inform the user what was done.
+4. **Before creating new files:** confirm with the user ("Vou criar o arquivo `{path}`. OK?").
+5. **Before deleting files or code:** ALWAYS ask ("Preciso remover `{path/code}`. Posso prosseguir?").
+6. **If the task is ambiguous** at any point, stop and ask for clarification.
+
+### Permission rules during execution
+
+| Action | Permission required? |
+|---|---|
+| Read/search files | No |
+| Modify existing file (small change) | No (inform after) |
+| Modify existing file (large refactor) | Yes — ask before |
+| Create new file | Yes — ask before |
+| Delete file | **Always** — ask before |
+| Delete code block | **Always** — ask before |
+| Install dependency | Yes — ask before |
+| Change config files | Yes — ask before |
+
+## Step A7 (optional) — Move task stage on Runrun.it
+
+If the user asks, move the task to "In Progress" or the appropriate stage:
+
+```
+server: user-runrunit-mcp
+toolName: runrunit_move_task_stage
+arguments: { "task_id": <task_id>, "board_stage_name": "In Progress" }
+```
+
+---
+
+# Flow B — Finish Task (Finalizar tarefa)
+
+Triggered when the user says "faz commit", "abre PR", "entrega a task", "comenta na task", or any finish-related action. Steps are numbered F1–F6 to distinguish from Flow A.
+
+## Step F1 — Fetch task data from Runrun.it
 
 Extract the numeric ID from the URL (e.g. `.../tasks/13631` → `13631`).
 
@@ -49,7 +235,7 @@ toolName: runrunit_list_task_comments
 arguments: { "task_id": <task_id> }
 ```
 
-## Step 2 — Determine change type
+## Step F2 — Determine change type
 
 Map the task info to one of the PR change types:
 
@@ -63,7 +249,7 @@ Map the task info to one of the PR change types:
 
 If ambiguous, ask the user or default to 🎨 Alteração de layout.
 
-## Step 3 — Create semantic commits
+## Step F3 — Create semantic commits
 
 ### Commit message format
 
@@ -116,7 +302,7 @@ To work around this:
 
 This applies to ALL git commit operations in this skill (commit, amend, etc.).
 
-## Step 4 — Open GitHub PR
+## Step F4 — Open GitHub PR
 
 ### PR title format
 
@@ -195,7 +381,7 @@ EOF
 
 Return the PR URL to the user.
 
-## Step 5 — Update task on Runrun.it
+## Step F5 — Update task on Runrun.it
 
 ### Save PR link in the task
 
@@ -279,7 +465,7 @@ Evidências (prints):
 - If the user provides the content for each section, use it as-is. If not, derive it from the task data, PR description, and commit messages.
 - Ask the user for clarification if the deliverables or validation steps are unclear.
 
-## Step 6 (optional) — Move task stage
+## Step F6 (optional) — Move task stage
 
 If the user asks, move the task to the next stage:
 
@@ -306,16 +492,34 @@ If the user provides before/after URLs:
 
 The user may request only part of the flow:
 
+### Flow A — Start triggers
+
+| Request | Steps to execute |
+|---|---|
+| "Iniciar tarefa" / "Começar task" / "Pega essa task" | A1 → A6 (full start flow) |
+| "Pega dados da task" | A1 only |
+| "Cria a branch" / "Checkout pra task" | A1 → A3 |
+| "Analisa a task" / "O que precisa fazer?" | A1, A4 → A5 (analyze + plan, no branch) |
+| "Inicia e já começa a codar" | A1 → A6 (full start + execute) |
+
+### Flow B — Finish triggers
+
 | Request | Steps to execute | Comment template |
 |---|---|---|
-| "Pega dados da task" | Step 1 only | — |
-| "Faz commit" | Steps 1 → 3 | — |
-| "Abre PR" | Steps 1 → 4 | — |
-| "Abre PR e comenta na task" | Steps 1 → 5 | Template A or B (ask if unclear) |
-| "Faz tudo" | Steps 1 → 6 | Template A or B (ask if unclear) |
-| "Só comenta na task" | Steps 1, 5 | Template A or B (ask if unclear) |
-| "Entrega a task" / "Passa pra validação" | Steps 1, 5 (with user-provided PR/links) | **Template B** |
-| "Comenta com PR e prints" | Steps 1, 5 | **Template B** |
+| "Faz commit" | F1 → F3 | — |
+| "Abre PR" | F1 → F4 | — |
+| "Abre PR e comenta na task" | F1 → F5 | Template A or B (ask if unclear) |
+| "Faz tudo" / "Finaliza" | F1 → F6 | Template A or B (ask if unclear) |
+| "Só comenta na task" | F1, F5 | Template A or B (ask if unclear) |
+| "Entrega a task" / "Passa pra validação" | F1, F5 (with user-provided PR/links) | **Template B** |
+| "Comenta com PR e prints" | F1, F5 | **Template B** |
+
+### Combined triggers
+
+| Request | Steps to execute |
+|---|---|
+| "Pega a task e faz tudo" | A1 → A6, then F1 → F6 when done |
+| "Inicia, desenvolve e abre PR" | A1 → A6, then F1 → F4 |
 
 Always confirm with the user which steps to perform if unclear.
 
@@ -334,10 +538,30 @@ Always confirm with the user which steps to perform if unclear.
 
 ## Important rules
 
-- Runrun.it comments are **plain text only** — no Markdown
-- PR body uses **full Markdown** with the project template
+### Permission & safety
+- **ALWAYS ask permission** before creating files, deleting files/code, installing dependencies, or changing config files
+- **ALWAYS verify workspace** before creating/checking out branches — never operate on the wrong repo
+- **ALWAYS check for uncommitted changes** before switching branches
+- **NEVER start coding without presenting a plan** and getting user approval (Flow A)
+- **NEVER delete files or code** without explicit user confirmation
+
+### Runrun.it
+- Comments are **plain text only** — no Markdown
+- Always include `TASK-{id}` reference in commits, PRs, and comments
+
+### Git
 - Always include `TASK-{id}` reference in commits and PR
 - Check `git status` before committing — never commit unrelated files
 - Never force push or amend unless explicitly asked
-- The PR template from the project must be followed exactly
+- Branch naming: `task{id}` (e.g. `task14003`)
 - **Git commit workaround:** ALWAYS use `& "C:\Program Files\Git\bin\git.exe" commit -F .git/COMMIT_MSG_TEMP` instead of `git commit -m "..."` to avoid the Cursor `--trailer` injection issue on git < 2.32. Write the message to `.git/COMMIT_MSG_TEMP` first using the Write tool, including `Made-with: Cursor` as the last line.
+
+### PR
+- PR body uses **full Markdown** with the project template
+- The PR template from the project must be followed exactly
+
+### Skills integration
+- When the task involves deco.cx or VTEX, **read the appropriate skill** before executing
+- Available skills: `deco-section`, `deco-loader`, `deco-island`, `deco-app`, `deco-vtex`, `vtex-io-component`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config`
+- Skills are located at `C:\Users\agencian1\.cursor\skills\{skill-name}\SKILL.md`
+- Follow the skill instructions exactly — they contain project-specific conventions and patterns
