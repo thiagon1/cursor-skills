@@ -12,8 +12,13 @@ Workflow that fetches task data from Runrun.it, creates semantic commits, opens 
 | Campo | Obrigatório | Descrição |
 |-------|-------------|-----------|
 | **Link da task** | Sim | URL da tarefa (ex.: `https://runrun.it/en-US/tasks/13631`) ou ID numérico |
-| **URLs antes/depois** | Não | Para evidências visuais no PR e na task |
+| **URLs antes/depois** | Não | Para evidências visuais no PR e na task (Template A) |
 | **Branch destino** | Não | Padrão: `development` |
+| **Link da PR** | Não | URL da Pull Request (Bitbucket ou GitHub). Se não fornecido, é criado no Step 4. |
+| **Link do workspace** | Não | URL de validação (ex.: `https://task14002--lojamm.myvtex.com/lancamentos`) |
+| **Links extras** | Não | GTM, Figma, documentos ou qualquer link adicional relevante |
+| **Prints/evidências** | Não | URLs de screenshots (prnt.sc, Cloudinary, etc.) |
+| **Descrição da entrega** | Não | O que foi entregue, em linguagem de negócio. Se não fornecido, é derivado da task. |
 
 ## Step 1 — Fetch task data from Runrun.it
 
@@ -211,7 +216,11 @@ arguments: {
 }
 ```
 
-Comment format (plain text, NO Markdown):
+Choose the comment template based on context:
+
+#### Template A — Comentário técnico (default para evidências antes/depois)
+
+Use when the user provides before/after URLs and the focus is on visual evidence of changes.
 
 ```
 Resumo do que foi feito:
@@ -230,6 +239,45 @@ Depois (Desktop): {url}
 Antes (Mobile): {url}
 Depois (Mobile): {url}
 ```
+
+#### Template B — Comentário de entrega (handoff para validação)
+
+Use when the user finishes a task and wants to document what was delivered, provide validation links (workspace, GTM, etc.), explain how to validate, and attach evidence prints. This is the preferred template when the user says "comenta na task", "entrega", "passa pra validação", or provides PR + prints + workspace links.
+
+```
+Atualização TASK-{id} - {task title}
+
+O que foi entregue:
+- {Bullet point describing deliverable 1 in business language, not technical jargon}
+- {Bullet point describing deliverable 2}
+- {Add as many bullets as needed}
+
+Links:
+- Pull Request (revisão do código): {pr_url}
+- Ambiente de validação (workspace): {workspace_url}
+{Include any extra links the user provides, e.g.:}
+- GTM: {gtm_url}
+- Figma: {figma_url}
+- Documento: {doc_url}
+
+Como validar:
+1) {Step-by-step instruction with specific actions to verify deliverable 1}
+2) {Step-by-step instruction to verify deliverable 2}
+{Number of steps should match the deliverables; be specific about what to check and where}
+
+Evidências (prints):
+{url_1}
+{url_2}
+{List each screenshot/print URL on its own line}
+```
+
+**Guidelines for Template B:**
+- Write "O que foi entregue" in **business language** — explain what the user/stakeholder sees, not what code was changed.
+- "Links" section is flexible: always include PR and workspace if provided; add any extra links the user passes (GTM, Figma, docs, etc.).
+- "Como validar" steps should be actionable and map to the deliverables — tell the validator exactly where to go and what to check.
+- "Evidências" is a simple list of URLs (prints, screenshots). No labels needed unless the user provides them.
+- If the user provides the content for each section, use it as-is. If not, derive it from the task data, PR description, and commit messages.
+- Ask the user for clarification if the deliverables or validation steps are unclear.
 
 ## Step 6 (optional) — Move task stage
 
@@ -258,14 +306,16 @@ If the user provides before/after URLs:
 
 The user may request only part of the flow:
 
-| Request | Steps to execute |
-|---|---|
-| "Pega dados da task" | Step 1 only |
-| "Faz commit" | Steps 1 → 3 |
-| "Abre PR" | Steps 1 → 4 |
-| "Abre PR e comenta na task" | Steps 1 → 5 |
-| "Faz tudo" | Steps 1 → 6 |
-| "Só comenta na task" | Steps 1, 5 |
+| Request | Steps to execute | Comment template |
+|---|---|---|
+| "Pega dados da task" | Step 1 only | — |
+| "Faz commit" | Steps 1 → 3 | — |
+| "Abre PR" | Steps 1 → 4 | — |
+| "Abre PR e comenta na task" | Steps 1 → 5 | Template A or B (ask if unclear) |
+| "Faz tudo" | Steps 1 → 6 | Template A or B (ask if unclear) |
+| "Só comenta na task" | Steps 1, 5 | Template A or B (ask if unclear) |
+| "Entrega a task" / "Passa pra validação" | Steps 1, 5 (with user-provided PR/links) | **Template B** |
+| "Comenta com PR e prints" | Steps 1, 5 | **Template B** |
 
 Always confirm with the user which steps to perform if unclear.
 
