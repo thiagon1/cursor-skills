@@ -12,6 +12,7 @@ Skills personalizadas para o Cursor AI, focadas em desenvolvimento VTEX, deco.cx
 | **vtex-io-component** | Criação de componentes React para VTEX IO com CSS Handles, Site Editor e interfaces.json |
 | **vtex-io-node-graphql** | Backend Node.js e GraphQL no VTEX IO — resolvers, clients, mutations e integração com React |
 | **vtex-checkout-config** | Configuração da API de Checkout VTEX — orderForm config, seller window, limpar mensagens |
+| **vtex-css** | CSS no VTEX IO — whitelist de seletores (depreciação de CSS por estrutura), CSS Handles, `useCssHandles` e API vtex.css-handles ([docs](https://bit.ly/io-css-selectors), [github](https://github.com/vtex-apps/css-handles)) |
 
 ### Analytics / Tracking
 
