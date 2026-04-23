@@ -298,9 +298,18 @@ To work around this:
 3. Call `git.exe` directly via its full path to bypass Cursor's wrapper:
    `& "C:\Program Files\Git\bin\git.exe" commit -F .git\COMMIT_MSG_TEMP`
 4. If the full path doesn't work, try: `cmd /c "git.exe commit -F .git\COMMIT_MSG_TEMP"`
-5. As a last resort, use `--no-verify` only if hooks are the issue (not the trailer)
+5. If hooks (lint, etc.) block the commit in projetos **sem** a exceção abaixo, use `commit ... --no-verify` **only** when the failure is from hooks, not the trailer (never use `--no-verify` to hide real errors the user should fix in VTEX/Node projects unless agreed).
 
-This applies to ALL git commit operations in this skill (commit, amend, etc.).
+**deco.cx — loja / projeto VFOR (e projetos Deco equivalentes):** nos commits deste contexto, use **quase sempre** `--no-verify` com o `git.exe` e `-F` acima, porque os *hooks* do repositório (Deno, fmt, checagens longas) costumam atrapalhar o fluxo de tarefa no agente. Comando padrão:
+
+```powershell
+& "C:\Program Files\Git\bin\git.exe" commit -F .git\COMMIT_MSG_TEMP --no-verify
+```
+
+- Confirme com o usuário o workspace: `deno.json` / `mod.ts` + repositório da loja Deco **VFOR** = aplicar o padrão.
+- Não use `--no-verify` por padrão em repositórios **VTEX IO** (store theme, apps) ou outros se o time exigir hooks — a regra geral de hook failure acima continua.
+
+This applies to ALL git commit operations in this skill (commit, amend, etc.) — ajuste `--no-verify` conforme a stack do repositório aberto.
 
 ## Step F4 — Open GitHub PR
 
@@ -554,7 +563,7 @@ Always confirm with the user which steps to perform if unclear.
 - Check `git status` before committing — never commit unrelated files
 - Never force push or amend unless explicitly asked
 - Branch naming: `task{id}` (e.g. `task14003`)
-- **Git commit workaround:** ALWAYS use `& "C:\Program Files\Git\bin\git.exe" commit -F .git/COMMIT_MSG_TEMP` instead of `git commit -m "..."` to avoid the Cursor `--trailer` injection issue on git < 2.32. Write the message to `.git/COMMIT_MSG_TEMP` first using the Write tool, including `Made-with: Cursor` as the last line.
+- **Git commit workaround:** ALWAYS use `& "C:\Program Files\Git\bin\git.exe" commit -F .git/COMMIT_MSG_TEMP` instead of `git commit -m "..."` to avoid the Cursor `--trailer` injection issue on git < 2.32. Write the message to `.git/COMMIT_MSG_TEMP` first using the Write tool, including `Made-with: Cursor` as the last line. **deco.cx / loja VFOR:** add `--no-verify` to that command by default (see Step F3).
 
 ### PR
 - PR body uses **full Markdown** with the project template
