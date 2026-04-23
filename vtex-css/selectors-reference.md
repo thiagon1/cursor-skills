@@ -36,6 +36,29 @@ Conteúdo alinhado à nota de release da VTEX sobre a deprecação de seletores 
 2. Para cada regra, identificar o **bloco** VTEX e o ponto a estilizar; mapear para **classe** exposta (Handle) ou ajuste no app que renderiza o componente.
 3. Onde faltar Handle no componente nativo, considerar: **app próprio** que envolva o bloco com `useCssHandles` (theme ou custom app), respeitando a skill **vtex-io-component** para estrutura de arquivos e dependências.
 
+## Validação ignorada por major version e escopos no tema
+
+No `vtex link`, o VTEX IO pode **não aplicar** a validação estrita de seletores a CSS associado a certas dependências **por major version**. Exemplo de mensagem:
+
+```text
+CSS validation was skipped for the following apps because of their current major version:
+
+- vtex.login@2.x
+- vtex.my-account@1.x
+```
+
+**O que isso significa na prática:** para esses apps, o pipeline de build pode aceitar regras que em outras pastas do tema seriam rejeitadas. Não é um “passe livre” de boas práticas — continua frágil — é um **escape hatch** operacional.
+
+**Padrão do time (documentar e manter):**
+
+- Centralizar **todos** os seletores **não conformes** (fora da whitelist oficial) nos arquivos do tema que ficam sob as pastas do **vendor do app**, por exemplo no Store Theme:
+  - `styles/css/vtex.login/**/*.css`
+  - `styles/css/vtex.my-account/**/*.css`
+- O restante do CSS do tema permanece com **Handles + whitelist**.
+- Ao **atualizar** `vtex.login` ou `vtex.my-account` (nova major) ou se a VTEX apertar a validação, reabrir esses arquivos e refatorar o que o CLI passar a bloquear.
+
+**Risco:** seletores ancorados em HTML podem quebrar em update do app. Manter a superfície mínima e comentar o motivo no topo do ficheiro.
+
 ## Links
 
 - [CSS Selectors deprecation (VTEX) — link curto](https://bit.ly/io-css-selectors)
