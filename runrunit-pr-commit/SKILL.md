@@ -273,7 +273,29 @@ Where `{type}` follows conventional commits:
 
 Updated shelf and search layouts for mobile viewport
 to properly display product size variations.
+
+Release: store.theme-mm@3.5.12
 ```
+
+### VTEX IO — versão e release (themes / apps da loja)
+
+Quando o repositório for um app **VTEX IO** (raiz com `manifest.json` contendo `vendor`, `name`, `version` e `builders`), ao preparar o commit de entrega de task:
+
+1. **Detectar** o app: `{vendor}.{name}` e a versão atual em `"version"` (semver `x.y.z`).
+2. **Subir a versão** no `manifest.json` sempre que o commit alterar algo publicável (componentes, blocos, CSS de tema, políticas, schemas, etc.). **Não** obrigatório para mudanças só de documentação interna sem impacto de deploy — confirme com o usuário se estiver na dúvida.
+   - **patch** (`3.5.11` → `3.5.12`): correções, ajustes de layout/CSS, pequenas correções.
+   - **minor** (`3.5.12` → `3.6.0`): novas features ou blocos visíveis, mudanças compatíveis na API do tema.
+   - **major**: breaking changes — **pedir confirmação** antes.
+3. **`CHANGELOG.md`:** se existir no repo, acrescentar entrada com **TASK-{id}**, resumo da mudança e o número da nova versão (seguir o padrão já usado no arquivo).
+4. **Mensagem de commit** — no **corpo** (após o resumo), incluir obrigatoriamente a linha de release no formato:
+
+   ```
+   Release: {vendor}.{name}@{version}
+   ```
+
+   Exemplo: `Release: store.theme-mm@3.5.12` (use a versão **nova** já refletida no `manifest.json`).
+5. **Staging:** incluir `manifest.json` (e `CHANGELOG.md` se alterado) **no mesmo commit** que o código da alteração, desde que sejam o mesmo entregável da task.
+6. **Monorepo / vários apps:** se houver mais de um `manifest.json`, aplicar bump e linha `Release` apenas no(s) app(s) que mudaram; se o padrão do repo for um commit por app, separar conforme convenção do projeto.
 
 ### How to commit
 
@@ -373,6 +395,7 @@ Use this exact template, filling in data from the task:
 > Adicione links para tarefas, épicos ou outras referências.
 
 - **Tarefa:** [TASK-{id}](https://runrun.it/en-US/tasks/{id})
+- **Versão publicável (VTEX IO):** `{vendor}.{name}@{version}` — usar a mesma versão do `manifest.json` deste PR (se aplicável)
 - **Design no Figma:** [Link para o design]({figma_url or "https://..."})
 - **Documento:** [Link]({doc_url or "https://..."})
 ```
@@ -560,6 +583,7 @@ Always confirm with the user which steps to perform if unclear.
 
 ### Git
 - Always include `TASK-{id}` reference in commits and PR
+- **VTEX IO (theme / app):** atualizar `"version"` no `manifest.json` quando o commit for entregável publicável; corpo do commit com linha `Release: {vendor}.{name}@{version}`; atualizar `CHANGELOG.md` se existir (ver Step F3)
 - Check `git status` before committing — never commit unrelated files
 - Never force push or amend unless explicitly asked
 - Branch naming: `task{id}` (e.g. `task14003`)
