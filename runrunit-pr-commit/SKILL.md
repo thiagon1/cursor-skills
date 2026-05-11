@@ -22,6 +22,9 @@ Two main flows:
 | **Links extras** | Não | GTM, Figma, documentos ou qualquer link adicional relevante |
 | **Prints/evidências** | Não | URLs de screenshots (prnt.sc, Cloudinary, etc.) |
 | **Descrição da entrega** | Não | O que foi entregue, em linguagem de negócio. Se não fornecido, é derivado da task. |
+| **Produção — tema/app novo** | Não | URL do **Admin** da versão **em produção** (setup), ex.: `https://{conta}.myvtex.com/admin/apps/{vendor}.{app}@{versao}/setup` |
+| **Produção — tema/app anterior** | Não | URL do setup da versão **anterior** (referência para comparação ou rollback) |
+| **Conta VTEX (para montar URL)** | Não | Ex.: `leeloo` — use quando souber `vendor.app@ver` mas faltar o host completo |
 
 ---
 
@@ -460,7 +463,7 @@ Depois (Mobile): {url}
 
 #### Template B — Comentário de entrega (handoff para validação)
 
-Use when the user finishes a task and wants to document what was delivered, provide validation links (workspace, GTM, etc.), explain how to validate, and attach evidence prints. This is the preferred template when the user says "comenta na task", "entrega", "passa pra validação", or provides PR + prints + workspace links.
+Use when the user finishes a task and wants to document what was delivered, provide validation links (workspace, GTM, etc.), explain how to validate, attach evidence prints, **or document theme/app versions live in production (VTEX Admin setup URLs)**. This is the preferred template when the user says "comenta na task", "entrega", "passa pra validação", "foi pra produção", or provides PR + prints + workspace links.
 
 ```
 Atualização TASK-{id} - {task title}
@@ -478,6 +481,15 @@ Links:
 - Figma: {figma_url}
 - Documento: {doc_url}
 
+{If the theme or store app was deployed to production on the main account, include the VTEX Admin setup URLs — see block below.}
+
+Produção (VTEX Admin):
+Versão nova do tema (ou app)
+https://{conta}.myvtex.com/admin/apps/{vendor}.{nome-do-app}@{versao_nova}/setup
+
+Versão antiga do tema (ou app)
+https://{conta}.myvtex.com/admin/apps/{vendor}.{nome-do-app}@{versao_antiga}/setup
+
 Como validar:
 1) {Step-by-step instruction with specific actions to verify deliverable 1}
 2) {Step-by-step instruction to verify deliverable 2}
@@ -487,15 +499,48 @@ Evidências (prints):
 {url_1}
 {url_2}
 {List each screenshot/print URL on its own line}
+
+Ou, quando quiser destacar um único capture de produção ou do Admin:
+
+Print:
+https://prnt.sc/exemplo
+```
+
+**Exemplo completo (produção + print) — texto simples, sem Markdown:**
+
+```
+Atualização TASK-12345 - Ajuste vitrine
+
+O que foi entregue:
+- ...
+
+Links:
+- Pull Request (revisão do código): https://bitbucket.org/...
+
+Produção (VTEX Admin):
+Versão nova do tema
+https://leeloo.myvtex.com/admin/apps/leeloo.store-theme@1.5.7/setup
+
+Versão antiga do tema
+https://leeloo.myvtex.com/admin/apps/leeloo.store-theme@1.5.6/setup
+
+Como validar:
+1) ...
+
+Print:
+https://prnt.sc/rwQq3HEvKLbr
 ```
 
 **Guidelines for Template B:**
 - Write "O que foi entregue" in **business language** — explain what the user/stakeholder sees, not what code was changed.
+- **Produção (theme/app):** se a entrega **foi para produção** na conta principal, inclua o bloco "Produção (VTEX Admin)" com **versão nova** e, quando fizer sentido, **versão anterior** (rollback/referência). Se o usuário não passar as URLs, monte com `https://{conta}.myvtex.com/admin/apps/{vendor}.{app}@{semver}/setup` usando conta + app + versões do `manifest`/`Release:` ou do que foi publicado. **Não** incluir o bloco se a task foi só homolog/workspace de teste.
 - "Links" section is flexible: always include PR and workspace if provided; add any extra links the user passes (GTM, Figma, docs, etc.).
 - "Como validar" steps should be actionable and map to the deliverables — tell the validator exactly where to go and what to check.
-- "Evidências" is a simple list of URLs (prints, screenshots). No labels needed unless the user provides them.
+- **Evidências / Print:** URLs puras (Runrun.it sem Markdown). Use "Print:" com uma linha de URL quando for uma evidência única (ex.: tela do Admin).
 - If the user provides the content for each section, use it as-is. If not, derive it from the task data, PR description, and commit messages.
 - Ask the user for clarification if the deliverables or validation steps are unclear.
+
+**URL pattern (Admin):** `https://{conta}.myvtex.com/admin/apps/{vendor}.{nome}@{versao}/setup` — use o semver que aparece no VTEX Admin ou na linha `Release:` do commit / `manifest.json` publicado.
 
 ## Step F6 (optional) — Move task stage
 
