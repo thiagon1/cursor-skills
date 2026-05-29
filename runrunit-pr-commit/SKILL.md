@@ -116,10 +116,13 @@ Parse the task `title`, `description`, `tags`, and `comments` to determine:
 
 | Signal in task data | Technology | Relevant skills |
 |---|---|---|
-| `vtex`, `vtex io`, `store-theme`, `site editor`, `shelf`, `checkout` | VTEX IO | `vtex-io-component`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config` |
+| `vtex`, `vtex io`, `store-theme`, `site editor`, `shelf`, `checkout` | VTEX IO | `vtex-io-component`, `vtex-css`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config` |
+| `css`, `estilo`, `style`, `layout`, `handle`, `seletor`, `tema`, `cor`, `responsiv` (em projeto VTEX) | VTEX IO CSS | `vtex-css` (+ `vtex-io-component` se criar componente) |
 | `deco`, `deco.cx`, `fresh`, `section`, `loader`, `island` | deco.cx | `deco-section`, `deco-loader`, `deco-island`, `deco-app`, `deco-vtex` |
 | `checkout`, `orderForm`, `checkout6-custom` | VTEX Checkout | `vtex-checkout`, `vtex-checkout-config` |
 | `graphql`, `node`, `resolver`, `client`, `middleware` | VTEX IO Node/GraphQL | `vtex-io-node-graphql` |
+
+**Regra:** em qualquer tarefa da **plataforma VTEX (VTEX IO)** que envolva CSS/estilo/layout/CSS Handles, **sempre** incluir a skill **`vtex-css`** no plano (Step A5) e lê-la antes de editar CSS.
 
 ### Task type detection
 
@@ -173,7 +176,7 @@ Wait for the user to confirm, adjust, or reject the plan.
 
 After user approval, execute the plan step by step:
 
-1. **Read the relevant skill** before starting (e.g., `deco-section`, `vtex-io-component`).
+1. **Read the relevant skill** before starting (e.g., `deco-section`, `vtex-io-component`, `vtex-css` para CSS/estilo em VTEX IO).
 2. **Follow the skill instructions** to create/modify files.
 3. **After each significant change**, briefly inform the user what was done.
 4. **Before creating new files:** confirm with the user ("Vou criar o arquivo `{path}`. OK?").
@@ -663,6 +666,7 @@ Always confirm with the user which steps to perform if unclear.
 
 ### Skills integration
 - When the task involves deco.cx or VTEX, **read the appropriate skill** before executing
-- Available skills: `deco-section`, `deco-loader`, `deco-island`, `deco-app`, `deco-vtex`, `vtex-io-component`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config`
+- **Plataforma VTEX + CSS/estilo/layout/CSS Handles:** SEMPRE usar a skill `vtex-css` (seletores permitidos, CSS Handles, padrão do time para seletores legados em `vtex.login`/`vtex.my-account`)
+- Available skills: `deco-section`, `deco-loader`, `deco-island`, `deco-app`, `deco-vtex`, `vtex-io-component`, `vtex-css`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config`
 - Skills are located at `C:\Users\agencian1\.cursor\skills\{skill-name}\SKILL.md`
 - Follow the skill instructions exactly — they contain project-specific conventions and patterns
