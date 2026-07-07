@@ -284,7 +284,16 @@ Where `{type}` follows conventional commits:
 - `docs:` for documentation
 - `style:` for layout/visual changes
 
-### Example (VTEX IO)
+### Example (VTEX IO — ajuste/homolog, SEM mudar versão)
+
+```
+[TASK-13631] style: adjust mobile shelf/search with sizes
+
+Updated shelf and search layouts for mobile viewport
+to properly display product size variations.
+```
+
+### Example (VTEX IO — commit de PRODUÇÃO, com bump confirmado)
 
 ```
 Release: store.theme-mm@3.5.12
@@ -309,12 +318,27 @@ to properly display product size variations.
 Quando o repositório for um app **VTEX IO** (raiz com `manifest.json` contendo `vendor`, `name`, `version` e `builders`), ao preparar o commit de entrega de task:
 
 1. **Detectar** o app: `{vendor}.{name}` e a versão atual em `"version"` (semver `x.y.z`).
-2. **Subir a versão** no `manifest.json` sempre que o commit alterar algo publicável (componentes, blocos, CSS de tema, políticas, schemas, etc.). **Não** obrigatório para mudanças só de documentação interna sem impacto de deploy — confirme com o usuário se estiver na dúvida.
-   - **patch** (`3.5.11` → `3.5.12`): correções, ajustes de layout/CSS, pequenas correções.
-   - **minor** (`3.5.12` → `3.6.0`): novas features ou blocos visíveis, mudanças compatíveis na API do tema.
-   - **major**: breaking changes — **pedir confirmação** antes.
-3. **`CHANGELOG.md`:** se existir no repo, acrescentar entrada com **TASK-{id}**, resumo da mudança e o número da nova versão (seguir o padrão já usado no arquivo).
-4. **Mensagem de commit** — a linha `Release:` é a **primeira linha** da mensagem (vem **antes** do `[TASK-…]`), seguida de uma linha em branco e depois o assunto/corpo:
+2. **NÃO subir a versão em qualquer ajuste.** Durante o desenvolvimento/ajustes/homolog (commits de branch, workspace de teste), **manter a `version` do `manifest.json` como está**. Commits comuns da task **não** alteram o `manifest.json` nem levam linha `Release:`.
+3. **Só alterar a versão quando for para PRODUÇÃO** (publicação do tema/app na conta principal — `vtex publish`/deploy). Só nesse momento se faz o bump no `manifest.json`.
+4. **Ao ir para produção, SEMPRE perguntar ao usuário qual incremento** (não decidir sozinho): patch, minor ou major.
+
+   Pergunte assim (sugerindo uma opção com base na mudança, mas aguardando confirmação):
+
+   ```
+   Vou publicar {vendor}.{name} (versão atual {x.y.z}).
+   Qual incremento de versão?
+   - patch → {x.y.(z+1)}  (correções, ajustes de layout/CSS)
+   - minor → {x.(y+1).0}  (novas features/blocos compatíveis)
+   - major → {(x+1).0.0}  (breaking changes)
+   ```
+
+   - **patch**: correções, ajustes de layout/CSS, pequenas correções.
+   - **minor**: novas features ou blocos visíveis, mudanças compatíveis.
+   - **major**: breaking changes.
+
+   Só aplicar o bump depois da resposta do usuário.
+5. **`CHANGELOG.md`:** se existir no repo, acrescentar entrada com **TASK-{id}**, resumo da mudança e o número da nova versão **apenas no commit de release/produção** (seguir o padrão já usado no arquivo).
+6. **Linha `Release:` só no commit de produção.** Quando o bump acontecer, a linha `Release:` é a **primeira linha** da mensagem (vem **antes** do `[TASK-…]`), seguida de uma linha em branco e depois o assunto/corpo:
 
    ```
    Release: {vendor}.{name}@{version}
@@ -322,9 +346,11 @@ Quando o repositório for um app **VTEX IO** (raiz com `manifest.json` contendo 
    [TASK-{id}] {type}: {short description}
    ```
 
-   Exemplo: `Release: store.theme-mm@3.5.12` (use a versão **nova** já refletida no `manifest.json`). Não usar a linha `Release:` como rodapé/trailer — neste fluxo ela é o **início** da mensagem.
-5. **Staging:** incluir `manifest.json` (e `CHANGELOG.md` se alterado) **no mesmo commit** que o código da alteração, desde que sejam o mesmo entregável da task.
-6. **Monorepo / vários apps:** se houver mais de um `manifest.json`, aplicar bump e linha `Release` apenas no(s) app(s) que mudaram; se o padrão do repo for um commit por app, separar conforme convenção do projeto. Se o mesmo commit tocar **dois** apps publicáveis (raro), usar duas linhas `Release:` no topo, uma por app.
+   Exemplo: `Release: store.theme-mm@3.5.12` (use a versão **nova** confirmada e já refletida no `manifest.json`). Não usar a linha `Release:` como rodapé/trailer — neste fluxo ela é o **início** da mensagem. Em commits que **não** são de produção, **não** incluir a linha `Release:`.
+7. **Staging (commit de produção):** incluir `manifest.json` (e `CHANGELOG.md` se alterado) **no mesmo commit** do release.
+8. **Monorepo / vários apps:** aplicar bump e linha `Release` apenas no(s) app(s) que vão para produção; se o mesmo release tocar **dois** apps publicáveis, usar duas linhas `Release:` no topo, uma por app.
+
+**Resumo:** ajuste/homolog = sem mudar versão e sem `Release:`. Produção = perguntar o incremento (patch/minor/major), fazer o bump no `manifest.json` e usar a linha `Release:` no topo do commit.
 
 ### How to commit
 
@@ -654,7 +680,7 @@ Always confirm with the user which steps to perform if unclear.
 
 ### Git
 - Always include `TASK-{id}` reference in commits and PR
-- **VTEX IO (theme / app):** atualizar `"version"` no `manifest.json` quando o commit for entregável publicável; **primeira linha** da mensagem do commit = `Release: {vendor}.{name}@{version}` (antes do `[TASK-…]`); atualizar `CHANGELOG.md` se existir (ver Step F3)
+- **VTEX IO (theme / app):** **não** subir `"version"` em ajustes/homolog; só alterar a versão **ao ir para produção** e **sempre perguntar** o incremento (patch/minor/major). No commit de produção: bump no `manifest.json`, `CHANGELOG.md` se existir, e **primeira linha** da mensagem = `Release: {vendor}.{name}@{version}` (antes do `[TASK-…]`). Ver Step F3
 - Check `git status` before committing — never commit unrelated files
 - Never force push or amend unless explicitly asked
 - Branch naming: `task{id}` (e.g. `task14003`)
