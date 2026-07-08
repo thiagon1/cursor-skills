@@ -604,18 +604,50 @@ toolName: runrunit_move_task_stage
 arguments: { "task_id": <task_id>, "board_stage_name": "Manager Validation" }
 ```
 
-## Evidence capture flow (when URLs provided)
+## Upload de prints/evidências via Cloudinary
 
-If the user provides before/after URLs:
+Sempre que houver **prints/screenshots** para anexar (na task, no PR ou nos docs), hospedar via **Cloudinary** com a ferramenta MCP `runrunit_upload_image_cloudinary` e usar a `secure_url` retornada. Ver também a skill `upload-image-cloudinary`.
 
-1. Use browser MCP to capture screenshots at multiple viewports (mobile 375px, desktop 1440px)
-2. Upload each screenshot via `runrunit_upload_image_cloudinary`:
-   ```
-   server: user-runrunit-mcp
-   toolName: runrunit_upload_image_cloudinary
-   arguments: { "file_path": "<screenshot_path>", "public_id": "task-{id}-{viewport}-{before|after}" }
-   ```
-3. Use the returned `secure_url` in both the PR body (markdown images) and the task comment (plain URLs)
+### Ferramenta MCP
+
+```
+server: user-runrunit-mcp
+toolName: runrunit_upload_image_cloudinary
+arguments: {
+  "file_path": "<caminho absoluto ou relativo da imagem no disco>",
+  "public_id": "task-{id}-{descricao}-{before|after}-{viewport}"   // opcional
+}
+```
+
+- **Retorno:** `{ "secure_url": "https://res.cloudinary.com/.../arquivo.png" }` — usar **apenas** a `secure_url` (HTTPS pública).
+- `public_id` é opcional; se informado, padronizar (ex.: `task-14003-vitrine-depois-mobile`). Reenviar com o mesmo `public_id` sobrescreve a imagem.
+- Pré-requisito: variáveis `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` configuradas no MCP (`mcp.json`). Se o upload falhar, verificar essas credenciais e se o servidor `user-runrunit-mcp` está **ready** (não "loading").
+
+### De onde vêm os arquivos
+
+| Origem | Como obter o `file_path` |
+|---|---|
+| Print que o usuário já tem no disco | Usar o caminho informado (ex.: `C:\Users\...\print.png`) |
+| Captura de página web (antes/depois) | `browser_take_screenshot` via browser MCP → usar o caminho retornado |
+| Múltiplos viewports | Capturar em mobile (~375px) e desktop (~1440px) e subir cada um |
+
+### Fluxo
+
+1. Reunir os arquivos de imagem (do usuário ou capturados via browser MCP).
+2. Para **cada** imagem, chamar `runrunit_upload_image_cloudinary` e guardar a `secure_url`.
+3. (Opcional) Validar o link com um HEAD HTTP — deve retornar **200** e `Content-Type: image/*`.
+4. Usar as URLs:
+   - **Comentário da task (Runrun.it):** texto simples, uma URL por linha (Template A "Evidências" ou Template B "Evidências (prints)" / "Print:").
+   - **Corpo do PR (Markdown):** `![Antes](secure_url)` / `![Depois](secure_url)`.
+
+### Exemplo
+
+```
+1) browser_take_screenshot → C:\...\depois-mobile.png
+2) runrunit_upload_image_cloudinary { file_path: "C:\...\depois-mobile.png", public_id: "task-14003-vitrine-depois-mobile" }
+   → secure_url: https://res.cloudinary.com/xxxx/image/upload/v.../task-14003-vitrine-depois-mobile.png
+3) Usar essa URL no comentário da task (linha pura) e no PR (![Depois](...))
+```
 
 ## Partial execution
 
@@ -677,6 +709,7 @@ Always confirm with the user which steps to perform if unclear.
 ### Runrun.it
 - Comments are **plain text only** — no Markdown
 - Always include `TASK-{id}` reference in commits, PRs, and comments
+- **Prints/evidências:** hospedar sempre via Cloudinary (`runrunit_upload_image_cloudinary`) e usar a `secure_url`; nunca colar caminho local do disco no comentário/PR (ver "Upload de prints/evidências via Cloudinary")
 
 ### Git
 - Always include `TASK-{id}` reference in commits and PR
@@ -693,6 +726,7 @@ Always confirm with the user which steps to perform if unclear.
 ### Skills integration
 - When the task involves deco.cx or VTEX, **read the appropriate skill** before executing
 - **Plataforma VTEX + CSS/estilo/layout/CSS Handles:** SEMPRE usar a skill `vtex-css` (seletores permitidos, CSS Handles, padrão do time para seletores legados em `vtex.login`/`vtex.my-account`)
-- Available skills: `deco-section`, `deco-loader`, `deco-island`, `deco-app`, `deco-vtex`, `vtex-io-component`, `vtex-css`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config`
+- **Prints/evidências:** usar a skill `upload-image-cloudinary` (ou a ferramenta `runrunit_upload_image_cloudinary`) para hospedar imagens antes de referenciá-las
+- Available skills: `deco-section`, `deco-loader`, `deco-island`, `deco-app`, `deco-vtex`, `vtex-io-component`, `vtex-css`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config`, `upload-image-cloudinary`, `registrar-evidencias`
 - Skills are located at `C:\Users\agencian1\.cursor\skills\{skill-name}\SKILL.md`
 - Follow the skill instructions exactly — they contain project-specific conventions and patterns
