@@ -1,6 +1,6 @@
-# VTEX Workspace — abrir, esperar login e debugar no navegador
+# VTEX IO Workspace — abrir, esperar login e debugar no navegador
 
-Skill para abrir **workspaces VTEX IO** (que são **privados** e exigem login) no navegador via MCP `user-chrome-devtools`, **esperar o usuário logar** e então **debugar/validar/ajustar** com console, network, screenshots e viewport. Use quando o usuário mandar uma URL de workspace VTEX e pedir para "abrir no navegador", "testar", "debugar", "validar o ajuste" ou "ver o console/erro".
+Skill **específica de VTEX IO** para abrir **workspaces VTEX IO** (que são **privados** e exigem login) no navegador via MCP `user-chrome-devtools`, **esperar o usuário logar** e então **debugar/validar/ajustar** com console, network, screenshots e viewport. Use quando o usuário mandar uma URL de workspace VTEX IO (`{workspace}--{conta}.myvtex.com`) e pedir para "abrir no navegador", "testar", "debugar", "validar o ajuste" ou "ver o console/erro".
 
 ## Pré-requisito
 
