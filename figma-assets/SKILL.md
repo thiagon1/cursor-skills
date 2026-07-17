@@ -1,6 +1,6 @@
 ---
 name: figma-assets
-description: Extrai design e assets do Figma via MCP a partir de um link — contexto/specs (get_design_context, metadata, variables, screenshot) e download de SVG/imagens (download_assets). Use quando o usuário enviar um link do Figma e pedir para pegar o design, specs, tokens, exportar SVG, baixar imagens/ícones ou implementar uma tela a partir do Figma.
+description: Extrai design e assets do Figma via MCP a partir de um link — contexto/specs (get_design_context, metadata, variables, screenshot), tipografia exata (font-family, tamanho, peso, estilo, line-height, letter-spacing), espaçamentos/margens/padding, e download de SVG/imagens (download_assets). Use quando o usuário enviar um link do Figma e pedir para pegar o design, specs, tokens, fontes, espaçamentos, exportar SVG, baixar imagens/ícones ou implementar uma tela a partir do Figma.
 ---
 
 # Figma — pegar design e assets via MCP
@@ -91,6 +91,53 @@ arguments: { "fileKey": "<fileKey>", "nodeId": "<nodeId>", "maxDimension": 1024 
 
 - Retorna URL curta + instruções `curl` (preferível; gasta menos contexto). Aumente `maxDimension` para inspecionar detalhes.
 
+## 1.5 — Tipografia e espaçamentos EXATOS (obrigatório)
+
+Nunca "chutar" fontes, tamanhos, margens ou espaçamentos. Extrair os valores reais do Figma e usá-los exatamente.
+
+### Fonte de verdade (ordem de prioridade)
+
+1. **`get_variable_defs`** — pega tokens/variáveis do nó (cores, **tipografia**, **espaçamentos**). Se o valor estiver como variável (ex.: `spacing/md = 16`, `font/body/size = 14`), **usar o token**, não o número solto.
+2. **`get_design_context`** — o código de referência traz os valores computados de CSS (font-family, font-size, font-weight, line-height, letter-spacing, margin, padding, gap). Extrair daqui o que não for variável.
+3. **`get_metadata`** — posições e tamanhos (x, y, width, height) de cada nó; útil para conferir espaçamentos/margens entre elementos quando não há auto-layout.
+
+### Tipografia — capturar SEMPRE estes campos
+
+| Propriedade | CSS de destino | Observações |
+|---|---|---|
+| Font family | `font-family` | Nome exato do Figma; garantir que a fonte está carregada no projeto (senão fica fallback errado) |
+| Font size | `font-size` | Em `px` do Figma; converter para `rem`/token se o projeto usar |
+| Font weight | `font-weight` | Mapear estilo do Figma → peso numérico (Regular=400, Medium=500, SemiBold=600, Bold=700) |
+| Font style | `font-style` | `italic` quando aplicável |
+| Line height | `line-height` | Figma em px ou %; preservar (usar `unitless` só se o projeto exigir) |
+| Letter spacing | `letter-spacing` | Figma em px ou %; converter % para `em` quando fizer sentido |
+| Text transform / decoration | `text-transform`, `text-decoration` | uppercase, underline, etc. |
+
+- **Estilos de texto (Text styles)**: se o texto usar um estilo compartilhado do design system, preferir mapear para o token/estilo equivalente do projeto em vez de valores soltos.
+- **Família de fonte**: confirmar que o `font-family` existe no projeto (import/`@font-face`/tema). Se não existir, avisar o usuário antes de implementar.
+
+### Espaçamentos / margens — capturar de forma exata
+
+| Propriedade | Origem no Figma |
+|---|---|
+| `gap` (entre itens) | Auto-layout → "item spacing" |
+| `padding` (interno) | Auto-layout → padding (top/right/bottom/left) |
+| `margin` (entre blocos) | Distância entre nós (via `get_metadata`/coords) ou auto-layout do pai |
+| Larguras/alturas fixas | `width`/`height` do nó (`get_metadata`) |
+
+- Preferir **auto-layout** do Figma como fonte de `gap`/`padding` (valores intencionais do designer).
+- Sem auto-layout, medir pela diferença de coordenadas (`x`/`y`, `width`/`height`) entre os nós no `get_metadata`.
+- Respeitar a **grid/escala de espaçamento** do projeto: se o design usa 4/8px e há tokens (`spacing/*`), usar o token correspondente em vez do número cru.
+- Não arredondar "no olho": usar o valor do Figma (arredondar só se o projeto tiver regra de escala explícita, e então mapear ao token mais próximo).
+
+### Checklist antes de implementar
+
+- [ ] `font-family`, `font-size`, `font-weight`, `font-style`, `line-height`, `letter-spacing` de cada texto capturados do Figma
+- [ ] Fonte(s) disponível(is) no projeto (import/@font-face/tema) — senão, avisar
+- [ ] `gap`/`padding`/`margin` vindos de auto-layout ou coords, não estimados
+- [ ] Tokens/variáveis usados quando existem (`get_variable_defs`)
+- [ ] Conferência visual final com `get_screenshot`
+
 ---
 
 # Flow 2 — Assets (SVG / imagens)
@@ -138,10 +185,11 @@ Se o objetivo é usar o SVG **inline** no código (componente React/Preact), abr
 
 1. Passo 0: extrair `fileKey` + `nodeId`.
 2. `get_design_context` para código + screenshot.
-3. `get_variable_defs` se houver tokens a mapear.
-4. `download_assets` (`svg`/`png`) para ícones e imagens do nó.
-5. Salvar assets no projeto (com confirmação) e implementar adaptando aos padrões da stack (`vtex-io-component` / `vtex-css` / `deco-section`).
-6. Comparar com `get_screenshot` para conferir fidelidade.
+3. `get_variable_defs` para tokens de tipografia/espaçamento/cor (usar tokens quando existirem).
+4. **Capturar tipografia e espaçamentos exatos** (seção 1.5): fontes, tamanhos, pesos, line-height, letter-spacing, `gap`/`padding`/`margin`.
+5. `download_assets` (`svg`/`png`) para ícones e imagens do nó.
+6. Salvar assets no projeto (com confirmação) e implementar adaptando aos padrões da stack (`vtex-io-component` / `vtex-css` / `deco-section`), aplicando os valores exatos capturados.
+7. Comparar com `get_screenshot` para conferir fidelidade (tipografia e espaçamentos incluídos).
 
 ## Ferramentas MCP (server `user-Figma`)
 
@@ -157,6 +205,8 @@ Se o objetivo é usar o SVG **inline** no código (componente React/Preact), abr
 ## Regras
 
 - **Sempre** extrair `fileKey`/`nodeId` do link antes de chamar qualquer ferramenta; nunca adivinhar `nodeId`.
+- **Tipografia e espaçamentos:** nunca estimar. Extrair `font-family`, `font-size`, `font-weight`, `font-style`, `line-height`, `letter-spacing`, `gap`, `padding` e `margin` do Figma (variáveis > design context > metadata) e aplicar os valores exatos. Ver seção 1.5.
+- Confirmar que a **família de fonte** existe no projeto antes de implementar; se faltar, avisar o usuário.
 - Código do `get_design_context` é referência — adaptar à stack (não colar cru).
 - Baixar assets logo após receber as URLs (expiram).
 - Pedir confirmação antes de criar/salvar arquivos no projeto.
