@@ -730,7 +730,8 @@ Always confirm with the user which steps to perform if unclear.
 - When the task involves deco.cx or VTEX, **read the appropriate skill** before executing
 - **Plataforma VTEX + CSS/estilo/layout/CSS Handles:** SEMPRE usar a skill `vtex-css` (seletores permitidos, CSS Handles, padrão do time para seletores legados em `vtex.login`/`vtex.my-account`)
 - **Task com link do Figma:** usar a skill `figma-assets` para extrair design, tipografia/espaçamentos exatos e assets (SVG/imagens) antes de implementar
+- **Validar/debugar no workspace VTEX (URL `{ws}--{conta}.myvtex.com`):** usar a skill `vtex-workspace-debug` — ela abre o workspace privado no navegador, **espera o usuário logar** e então debuga/valida/captura evidências
 - **Prints/evidências:** usar a skill `upload-image-cloudinary` (ou a ferramenta `runrunit_upload_image_cloudinary`) para hospedar imagens antes de referenciá-las
-- Available skills: `deco-section`, `deco-loader`, `deco-island`, `deco-app`, `deco-vtex`, `vtex-io-component`, `vtex-css`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config`, `figma-assets`, `upload-image-cloudinary`, `registrar-evidencias`
+- Available skills: `deco-section`, `deco-loader`, `deco-island`, `deco-app`, `deco-vtex`, `vtex-io-component`, `vtex-css`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config`, `vtex-workspace-debug`, `figma-assets`, `upload-image-cloudinary`, `registrar-evidencias`
 - Skills are located at `C:\Users\agencian1\.cursor\skills\{skill-name}\SKILL.md`
 - Follow the skill instructions exactly — they contain project-specific conventions and patterns
