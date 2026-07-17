@@ -20,6 +20,12 @@ Skills personalizadas para o Cursor AI, focadas em desenvolvimento VTEX, deco.cx
 |---|---|
 | **gtm-tags** | Google Tag Manager — auditar, validar, debugar e implementar tags, triggers, dataLayer e eventos GA4 (ecommerce e customizados) |
 
+### Design / Figma
+
+| Skill | Descrição |
+|---|---|
+| **figma-assets** | Extrai design e assets do Figma via MCP a partir de um link — contexto/specs, tokens/variáveis e download de SVG/imagens/ícones |
+
 ### deco.cx
 
 | Skill | Descrição |
