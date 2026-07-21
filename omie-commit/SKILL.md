@@ -1,21 +1,21 @@
 ---
 name: omie-commit
 description: >-
-  Branch and commit standard for the OMIE project (Next.js + Strapi). Use when
-  creating a branch or writing a git commit in C:/projetos/omie: enforces
-  feat/<descricao> branch naming and Conventional Commits with a rich,
-  context-first body (what/why, problem, solution, rationale, edge cases, tests).
-  Use whenever the user asks to commit, branch, or "seguir o padrão do omie".
+  Branch, commit and pull request standard for the OMIE project (Next.js +
+  Strapi). Use when creating a branch, writing a git commit, or opening a PR in
+  C:/projetos/omie: enforces feat/<descricao> branch naming, Conventional
+  Commits with a rich context-first body, and the official OMIE PR template.
+  Use whenever the user asks to commit, branch, open a PR, or "seguir o padrão do omie".
 ---
 
-# OMIE — padrão de branch e commit
+# OMIE — padrão de branch, commit e PR
 
-Padrão de **branch** e **mensagem de commit** do projeto OMIE (`C:\projetos\omie`, Next.js `front/` + Strapi `cms/`). Use ao criar branch ou commitar neste repo.
+Padrão de **branch**, **mensagem de commit** e **descrição de Pull Request** do projeto OMIE (`C:\projetos\omie`, Next.js `front/` + Strapi `cms/`). Use ao criar branch, commitar ou abrir PR neste repo.
 
 ## Quando usar
 
-- "criar branch no omie", "commit no omie", "seguir o padrão do omie", "commitar isso"
-- Sempre que estiver commitando dentro de `C:\projetos\omie`
+- "criar branch no omie", "commit no omie", "abrir PR no omie", "seguir o padrão do omie", "commitar isso"
+- Sempre que estiver commitando ou abrindo PR dentro de `C:\projetos\omie`
 
 ---
 
@@ -119,9 +119,118 @@ Por causa da injeção de `--trailer` do Cursor (falha em git < 2.32), escrever 
 
 ---
 
-## 4. Integração
+## 4. Pull Request — template do omie
 
-- **`runrunit-pr-commit`**: ao iniciar/entregar uma task do omie, usar esta skill para nome de branch (`feat/<descricao>`) e mensagem de commit; o restante (PR, comentário na task, Cloudinary) segue a `runrunit-pr-commit`.
+Ao abrir PR no repo omie, usar **exatamente** o template abaixo (Markdown completo). Preencher a descrição, **marcar** os checkboxes de tipo/áreas/checklist que se aplicam (`[x]`), anexar screenshots quando houver UI e só marcar itens do checklist que **de fato** foram verificados.
+
+```markdown
+# 📋 Pull Request
+
+## 📝 Descrição
+
+<!-- Descreva o que foi alterado e o motivo. Seja objetivo. -->
+
+---
+
+## 🏷️ Tipo de mudança
+
+- [ ] ✨ `feat` — Nova funcionalidade
+- [ ] 🐛 `fix` — Correção de bug
+- [ ] 📚 `docs` — Alteração em documentação
+- [ ] 🔧 `refactor` — Refatoração (sem mudança de comportamento)
+- [ ] 💄 `style` — Ajuste de estilo (formato, lint, etc.)
+- [ ] 🧹 `chore` — Manutenção, configuração, deps
+- [ ] ⚡ `perf` — Melhoria de performance
+
+---
+
+## 📂 Áreas afetadas
+
+- [ ] `front/` — Next.js (App Router, componentes, lib)
+- [ ] `cms/` — Strapi (content-types, controllers, services)
+- [ ] `docs/` — Documentação de arquitetura
+- [ ] Outro: ___
+
+---
+
+## 🔗 Issue relacionada
+
+<!-- Ex.: Fixes #123 ou Relacionado a #456 -->
+
+---
+
+## ✅ Checklist
+
+### 🛠️ Build e Lint
+
+- [ ] `cd front && npm run build` — passa sem erros
+- [ ] `cd front && npm run lint` — passa sem warnings/erros
+- [ ] `cd front && npm run typecheck` — passa sem erros
+- [ ] `cd front && npm run test:contracts` — passa sem erros *(se alterou sections/populate)*
+- [ ] `cd front && npm run audit:cms-populate` — passa sem erros *(se alterou sections/populate)*
+- [ ] `cd cms && npm run build` — passa sem erros *(se alterou o CMS)*
+
+### 💻 Código *(ver [IMPLEMENTATION-CHECKLIST.md](docs/IMPLEMENTATION-CHECKLIST.md))*
+
+- [ ] Sem `any` em tipos/props
+- [ ] Componentes só importam de `lib/*/client.ts` e `lib/*/types.ts` *(anti-corruption layer)*
+- [ ] Sem `fetch` direto para Strapi em componentes
+- [ ] URLs e tokens em variáveis de ambiente *(nunca hardcoded)*
+- [ ] Sem `'use client'` desnecessário *(Server Component por padrão)*
+
+### 🎨 Visual *(se houver alteração de UI)*
+
+- [ ] Componentes consultam `site/design-system.html` e seguem os tokens
+- [ ] Variáveis de cor utilizadas *(text-foreground, bg-ciano, etc.)* — sem hex direto
+- [ ] Tailwind classes utilizadas *(sem `style` inline)*
+- [ ] Responsivo testado *(mobile, tablet, desktop)*
+- [ ] Screenshots ou GIFs anexados abaixo *(quando aplicável)*
+
+### 🔌 Integração *(se houver nova API ou alteração em `lib/strapi/`)*
+
+- [ ] Nova pasta em `lib/<nome>/` com client, types e transformers
+- [ ] Timeout e tratamento de erro configurados
+- [ ] Variáveis de ambiente documentadas em `.env.example`
+
+---
+
+## 📸 Screenshots / Preview
+
+<!-- Anexe imagens ou GIFs quando houver mudanças visuais. -->
+
+---
+
+## 📌 Notas adicionais
+
+<!-- Considerações para reviewers, breaking changes, migrações, etc. -->
+```
+
+### Regras de preenchimento
+
+- **Tipo de mudança:** marcar o mesmo tipo do commit/branch (`feat`/`fix`/etc.).
+- **Áreas afetadas:** marcar só o que o diff realmente toca (`front/`, `cms/`, `docs/`).
+- **Checklist Build e Lint:** só marcar `[x]` os comandos que **rodou e passaram**. Rodar no mínimo `build`, `lint` e `typecheck` do `front/`; os condicionais só quando aplicável (alterou sections/populate → `test:contracts`/`audit:cms-populate`; alterou CMS → `cd cms && npm run build`).
+- **Screenshots:** para mudança de UI, anexar imagens (hospedar via Cloudinary — ver `upload-image-cloudinary`/`runrunit-pr-commit`).
+- **Issue/Task:** vincular a issue do GitHub e/ou a task do Runrun.it (`TASK-{id}`) quando houver.
+
+### Criar o PR (gh)
+
+```bash
+git push -u origin HEAD
+
+gh pr create --title "{tipo}: {descrição}" --body "$(cat <<'EOF'
+{template preenchido acima}
+EOF
+)"
+```
+
+- Confirmar com o usuário a **branch base** do PR (o repo usa `main`/`master`/`preview`/`develop` conforme o fluxo).
+
+---
+
+## 5. Integração
+
+- **`runrunit-pr-commit`**: ao iniciar/entregar uma task do omie, usar **esta** skill para nome de branch (`feat/<descricao>`), mensagem de commit **e descrição do PR** (template do omie acima, em vez do template genérico do Step F4). O restante do fluxo (comentário na task, upload de prints via Cloudinary, mover stage) segue a `runrunit-pr-commit`.
 - Skills de implementação do omie: `component-creator`, `strapi-single-cpts`, `page-builder-section-mapper`, `section-performance-optimizer`, `frontend-performance`, `popup-form-template-creator`, `legacy-lp-*`.
 
 ## Regras
@@ -130,3 +239,4 @@ Por causa da injeção de `--trailer` do Cursor (falha em git < 2.32), escrever 
 - Commit: Conventional Commits com assunto em português + **corpo explicando o porquê** (contexto, problema, solução, casos de borda, testes).
 - `[TASK-{id}]` no assunto é opcional (usar quando vier do Runrun.it).
 - Commitar com `git.exe -F .git\COMMIT_MSG_TEMP`; deixar husky/lint-staged rodar; `--no-verify` só em falha espúria e com aviso.
+- **PR:** usar o template oficial do omie (seção 4). Marcar só checkboxes verificados de fato; rodar build/lint/typecheck do `front/` antes de marcar. Confirmar a branch base do PR.

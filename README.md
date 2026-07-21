@@ -42,7 +42,7 @@ Skills personalizadas para o Cursor AI, focadas em desenvolvimento VTEX, deco.cx
 | Skill | Descrição |
 |---|---|
 | **runrunit-pr-commit** | Ciclo completo de tasks no Runrun.it — inicia tarefa (branch, análise, plano), executa com outras skills, commit, PR e comentário de entrega |
-| **omie-commit** | Padrão de branch (`feat/<descricao>`) e commit (Conventional Commits + corpo detalhado com contexto/porquê) do projeto omie (Next.js + Strapi) |
+| **omie-commit** | Padrão de branch (`feat/<descricao>`), commit (Conventional Commits + corpo detalhado com contexto/porquê) e template de PR do projeto omie (Next.js + Strapi) |
 
 ## Como usar
 

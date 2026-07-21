@@ -142,7 +142,7 @@ Parse the task `title`, `description`, `tags`, and `comments` to determine:
 **Regra (Figma):** se a task tiver um **link do Figma** (na descrição, comentários ou enviado pelo usuário), incluir a skill **`figma-assets`** no plano e usá-la para extrair design, tipografia/espaçamentos exatos e assets (SVG/imagens) antes de implementar.
 
 **Regra (omie):** quando o repositório for o **omie** (`C:\projetos\omie`, stack Next.js + Strapi):
-- **Branch e commit:** seguir a skill **`omie-commit`** (global, em `~/.cursor/skills`) — branch `feat/<descricao>` (ver Step A3, **não** `task{id}`) e commit Conventional Commits com corpo detalhado (contexto/porquê).
+- **Branch, commit e PR:** seguir a skill **`omie-commit`** (global, em `~/.cursor/skills`) — branch `feat/<descricao>` (ver Step A3, **não** `task{id}`), commit Conventional Commits com corpo detalhado (contexto/porquê) e **descrição do PR com o template oficial do omie** (usar em vez do template genérico do Step F4).
 - **Implementação:** as demais skills do omie são **project-scoped** e ficam em `C:\projetos\omie\.cursor\skills\{skill}\SKILL.md` (o Cursor as carrega automaticamente ao trabalhar nesse repo). Incluir a(s) skill(s) apropriada(s) no plano (Step A5) e **ler antes de executar**.
 
 ### Task type detection
@@ -420,6 +420,8 @@ This applies to ALL git commit operations in this skill (commit, amend, etc.) �
 Example: `[Clovis B2C] vitrine/pesquisa mobile com numerações`
 
 ### PR body template
+
+> **Exceção por projeto — omie:** se o repositório for o **omie** (`C:\projetos\omie`), **NÃO** usar o template abaixo. Usar o **template oficial do omie** definido na skill `omie-commit` (seção "Pull Request"). O template abaixo é o padrão para os demais projetos.
 
 Use this exact template, filling in data from the task:
 
@@ -751,7 +753,7 @@ Always confirm with the user which steps to perform if unclear.
 - **Validar/debugar no workspace VTEX IO (URL `{ws}--{conta}.myvtex.com`):** usar a skill `vtex-io-workspace-debug` — ela abre o workspace privado no navegador, **espera o usuário logar** e então debuga/valida/captura evidências
 - **Prints/evidências:** usar a skill `upload-image-cloudinary` (ou a ferramenta `runrunit_upload_image_cloudinary`) para hospedar imagens antes de referenciá-las
 - **Projeto omie (Next.js + Strapi):**
-  - **Branch/commit — `omie-commit`** (skill **global**, em `~/.cursor/skills`): padrão de branch (`feat/<descricao>`) e commit (Conventional Commits + corpo detalhado). Usar sempre que for branchar/commitar no repo omie.
+  - **Branch/commit/PR — `omie-commit`** (skill **global**, em `~/.cursor/skills`): padrão de branch (`feat/<descricao>`), commit (Conventional Commits + corpo detalhado) e **template de PR do omie**. Usar sempre que for branchar/commitar/abrir PR no repo omie.
   - Skills de **implementação** (project-scoped, em `C:\projetos\omie\.cursor\skills\`), use conforme a task:
   - `component-creator` — criar/extrair/refatorar componentes React (front Next.js, Tailwind v4, DS)
   - `strapi-single-cpts` — criar/evoluir Single Types e CPTs no Strapi (`cms/`) + tipagem no front
