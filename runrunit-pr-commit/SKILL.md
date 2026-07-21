@@ -91,7 +91,7 @@ O padrão de branch **depende do repositório**. Detecte o projeto (pelo `projec
 | Projeto / repo | Convenção | Exemplo |
 |---|---|---|
 | Padrão (VTEX IO, deco.cx, geral) | `task{id}` | `task14003` |
-| **omie** (Next.js + Strapi — `C:\projetos\omie`) | `{tipo}/{descricao-kebab}` — **NÃO** usar `task{id}` | `feat/blog-page`, `feat/new-home-blog`, `fix/popup-form` |
+| **omie** (Next.js + Strapi — `C:\projetos\omie`) | `{tipo}/{descricao-kebab}` — **NÃO** usar `task{id}` (ver skill `omie-commit`) | `feat/blog-page`, `feat/new-home-blog`, `fix/popup-form` |
 
 - No padrão `{tipo}/{descricao}`: `{tipo}` segue conventional commits (`feat`, `fix`, `refactor`, `docs`, `style`, `chore`) e `{descricao}` é um resumo curto em **kebab-case** derivado do título da task.
 - Ao detectar o repositório **omie**, confirmar o nome com o usuário: "Projeto omie usa `{tipo}/<descricao>`. Sugiro `feat/{descricao}` (da task '{title}'). Confirma esse nome ou prefere outro?"
@@ -141,7 +141,7 @@ Parse the task `title`, `description`, `tags`, and `comments` to determine:
 
 **Regra (Figma):** se a task tiver um **link do Figma** (na descrição, comentários ou enviado pelo usuário), incluir a skill **`figma-assets`** no plano e usá-la para extrair design, tipografia/espaçamentos exatos e assets (SVG/imagens) antes de implementar.
 
-**Regra (omie):** quando o repositório for o **omie** (`C:\projetos\omie`, stack Next.js + Strapi), as skills relevantes são **project-scoped** e ficam em `C:\projetos\omie\.cursor\skills\{skill}\SKILL.md` (o Cursor as carrega automaticamente ao trabalhar nesse repo). Incluir a(s) skill(s) apropriada(s) no plano (Step A5) e **ler antes de executar**. Além disso, usar a convenção de branch `feat/<descricao>` (ver Step A3), **não** `task{id}`.
+**Regra (omie):** quando o repositório for o **omie** (`C:\projetos\omie`, stack Next.js + Strapi), as skills relevantes são **project-scoped** e ficam em `C:\projetos\omie\.cursor\skills\{skill}\SKILL.md` (o Cursor as carrega automaticamente ao trabalhar nesse repo). Incluir a(s) skill(s) apropriada(s) no plano (Step A5) e **ler antes de executar**. Para **branch e commit**, seguir a skill **`omie-commit`**: branch `feat/<descricao>` (ver Step A3, **não** `task{id}`) e commit Conventional Commits com corpo detalhado (contexto/porquê).
 
 ### Task type detection
 
@@ -749,6 +749,7 @@ Always confirm with the user which steps to perform if unclear.
 - **Validar/debugar no workspace VTEX IO (URL `{ws}--{conta}.myvtex.com`):** usar a skill `vtex-io-workspace-debug` — ela abre o workspace privado no navegador, **espera o usuário logar** e então debuga/valida/captura evidências
 - **Prints/evidências:** usar a skill `upload-image-cloudinary` (ou a ferramenta `runrunit_upload_image_cloudinary`) para hospedar imagens antes de referenciá-las
 - **Projeto omie (Next.js + Strapi):** as skills são **project-scoped** e ficam em `C:\projetos\omie\.cursor\skills\`. Use conforme a task:
+  - `omie-commit` — **padrão de branch (`feat/<descricao>`) e commit** (Conventional Commits + corpo detalhado) do omie; usar sempre que for branchar/commitar nesse repo
   - `component-creator` — criar/extrair/refatorar componentes React (front Next.js, Tailwind v4, DS)
   - `strapi-single-cpts` — criar/evoluir Single Types e CPTs no Strapi (`cms/`) + tipagem no front
   - `page-builder-section-mapper` — mapear uma URL em seções do page builder (screenshots + campos CMS)
