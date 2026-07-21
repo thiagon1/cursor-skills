@@ -84,29 +84,42 @@ Before creating a branch, confirm the user is in the correct project folder.
 
 ## Step A3 — Create or checkout branch
 
-Branch naming convention: `task{id}` (e.g. `task14003`).
+### Branch naming convention (POR PROJETO)
+
+O padrão de branch **depende do repositório**. Detecte o projeto (pelo `project_name` da task, pelo `git remote -v` ou pela pasta) e use a convenção certa. Chame o nome final de `{branch}`:
+
+| Projeto / repo | Convenção | Exemplo |
+|---|---|---|
+| Padrão (VTEX IO, deco.cx, geral) | `task{id}` | `task14003` |
+| **omie** (Next.js + Strapi — `C:\projetos\omie`) | `{tipo}/{descricao-kebab}` — **NÃO** usar `task{id}` | `feat/blog-page`, `feat/new-home-blog`, `fix/popup-form` |
+
+- No padrão `{tipo}/{descricao}`: `{tipo}` segue conventional commits (`feat`, `fix`, `refactor`, `docs`, `style`, `chore`) e `{descricao}` é um resumo curto em **kebab-case** derivado do título da task.
+- Ao detectar o repositório **omie**, confirmar o nome com o usuário: "Projeto omie usa `{tipo}/<descricao>`. Sugiro `feat/{descricao}` (da task '{title}'). Confirma esse nome ou prefere outro?"
+- Se não tiver certeza da convenção ou da descrição, **perguntar ao usuário** antes de criar a branch.
+
+### Passos
 
 1. Run `git status` to check for uncommitted changes.
    - If there are uncommitted changes, STOP and ask: "Existem alterações não commitadas na branch atual. Deseja fazer stash, commit ou descartar antes de trocar?"
    - Wait for user confirmation before proceeding.
 
-2. Check if the branch already exists:
+2. Definir `{branch}` conforme a convenção do projeto (tabela acima) e checar se já existe:
    ```
-   git branch --list task{id}
-   git branch -r --list "*/task{id}"
+   git branch --list {branch}
+   git branch -r --list "*/{branch}"
    ```
 
-3. **If branch exists locally:** ask the user: "A branch `task{id}` já existe. Deseja fazer checkout para ela?"
-   - On confirmation: `git checkout task{id}`
+3. **If branch exists locally:** ask the user: "A branch `{branch}` já existe. Deseja fazer checkout para ela?"
+   - On confirmation: `git checkout {branch}`
 
-4. **If branch exists only on remote:** ask: "A branch `task{id}` existe no remoto. Deseja fazer checkout?"
-   - On confirmation: `git checkout -b task{id} origin/task{id}`
+4. **If branch exists only on remote:** ask: "A branch `{branch}` existe no remoto. Deseja fazer checkout?"
+   - On confirmation: `git checkout -b {branch} origin/{branch}`
 
-5. **If branch does not exist:** ask: "Vou criar a branch `task{id}` a partir de `{current_branch}`. Confirma?"
+5. **If branch does not exist:** ask: "Vou criar a branch `{branch}` a partir de `{current_branch}`. Confirma?"
    - The base branch should typically be `development` or `main` — ask if unclear.
-   - On confirmation: `git checkout -b task{id} {base_branch}`
+   - On confirmation: `git checkout -b {branch} {base_branch}`
 
-6. Confirm to the user: "Branch `task{id}` pronta. Trabalhando a partir de `{base_branch}`."
+6. Confirm to the user: "Branch `{branch}` pronta. Trabalhando a partir de `{base_branch}`."
 
 ## Step A4 — Analyze task and identify technology / skills
 
@@ -122,10 +135,13 @@ Parse the task `title`, `description`, `tags`, and `comments` to determine:
 | `checkout`, `orderForm`, `checkout6-custom` | VTEX Checkout | `vtex-checkout`, `vtex-checkout-config` |
 | `graphql`, `node`, `resolver`, `client`, `middleware` | VTEX IO Node/GraphQL | `vtex-io-node-graphql` |
 | link do **Figma** (`figma.com/design/...`), `design`, `layout no figma`, `protótipo`, `mockup` | Design/Figma | `figma-assets` (+ skill de implementação da stack) |
+| **omie** (projeto `C:\projetos\omie`), `next.js`/`nextjs`, `strapi`, `cms`, `page builder`/`section`, `landing page`/`LP`, `blog`, `popup`, `component`/`componente`, `TBT`/`performance`/`pagespeed` | omie (Next.js + Strapi) | Skills **do projeto omie** (project-scoped): `component-creator`, `strapi-single-cpts`, `page-builder-section-mapper`, `section-performance-optimizer`, `frontend-performance`, `popup-form-template-creator`, `legacy-lp-text-sync`, `legacy-lp-css-background-sync`, `legacy-lp-section-precos` |
 
 **Regra:** em qualquer tarefa da **plataforma VTEX (VTEX IO)** que envolva CSS/estilo/layout/CSS Handles, **sempre** incluir a skill **`vtex-css`** no plano (Step A5) e lê-la antes de editar CSS.
 
 **Regra (Figma):** se a task tiver um **link do Figma** (na descrição, comentários ou enviado pelo usuário), incluir a skill **`figma-assets`** no plano e usá-la para extrair design, tipografia/espaçamentos exatos e assets (SVG/imagens) antes de implementar.
+
+**Regra (omie):** quando o repositório for o **omie** (`C:\projetos\omie`, stack Next.js + Strapi), as skills relevantes são **project-scoped** e ficam em `C:\projetos\omie\.cursor\skills\{skill}\SKILL.md` (o Cursor as carrega automaticamente ao trabalhar nesse repo). Incluir a(s) skill(s) apropriada(s) no plano (Step A5) e **ler antes de executar**. Além disso, usar a convenção de branch `feat/<descricao>` (ver Step A3), **não** `task{id}`.
 
 ### Task type detection
 
@@ -719,7 +735,7 @@ Always confirm with the user which steps to perform if unclear.
 - **VTEX IO (theme / app):** **não** subir `"version"` em ajustes/homolog; só alterar a versão **ao ir para produção** e **sempre perguntar** o incremento (patch/minor/major). No commit de produção: bump no `manifest.json`, `CHANGELOG.md` se existir, e **primeira linha** da mensagem = `Release: {vendor}.{name}@{version}` (antes do `[TASK-…]`). Ver Step F3
 - Check `git status` before committing — never commit unrelated files
 - Never force push or amend unless explicitly asked
-- Branch naming: `task{id}` (e.g. `task14003`)
+- Branch naming: **depende do projeto** (ver Step A3) — padrão `task{id}` (ex.: `task14003`); **omie** usa `feat/<descricao>` (ex.: `feat/blog-page`), nunca `task{id}`
 - **Git commit workaround:** ALWAYS use `& "C:\Program Files\Git\bin\git.exe" commit -F .git/COMMIT_MSG_TEMP` instead of `git commit -m "..."` to avoid the Cursor `--trailer` injection issue on git < 2.32. Write the message to `.git/COMMIT_MSG_TEMP` first using the Write tool, including `Made-with: Cursor` as the last line. **deco.cx / loja VFOR:** add `--no-verify` to that command by default (see Step F3).
 
 ### PR
@@ -732,6 +748,16 @@ Always confirm with the user which steps to perform if unclear.
 - **Task com link do Figma:** usar a skill `figma-assets` para extrair design, tipografia/espaçamentos exatos e assets (SVG/imagens) antes de implementar
 - **Validar/debugar no workspace VTEX IO (URL `{ws}--{conta}.myvtex.com`):** usar a skill `vtex-io-workspace-debug` — ela abre o workspace privado no navegador, **espera o usuário logar** e então debuga/valida/captura evidências
 - **Prints/evidências:** usar a skill `upload-image-cloudinary` (ou a ferramenta `runrunit_upload_image_cloudinary`) para hospedar imagens antes de referenciá-las
-- Available skills: `deco-section`, `deco-loader`, `deco-island`, `deco-app`, `deco-vtex`, `vtex-io-component`, `vtex-css`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config`, `vtex-io-workspace-debug`, `figma-assets`, `upload-image-cloudinary`, `registrar-evidencias`
-- Skills are located at `C:\Users\agencian1\.cursor\skills\{skill-name}\SKILL.md`
+- **Projeto omie (Next.js + Strapi):** as skills são **project-scoped** e ficam em `C:\projetos\omie\.cursor\skills\`. Use conforme a task:
+  - `component-creator` — criar/extrair/refatorar componentes React (front Next.js, Tailwind v4, DS)
+  - `strapi-single-cpts` — criar/evoluir Single Types e CPTs no Strapi (`cms/`) + tipagem no front
+  - `page-builder-section-mapper` — mapear uma URL em seções do page builder (screenshots + campos CMS)
+  - `section-performance-optimizer` — otimizar seções do page builder em lotes de 5 UIDs (TBT/PageSpeed)
+  - `frontend-performance` — diagnosticar/otimizar performance Next.js (Lighthouse, bundle, Core Web Vitals)
+  - `popup-form-template-creator` — criar/editar popups e templates de formulário (mapeamento HubSpot)
+  - `legacy-lp-text-sync` — sincronizar textos de LPs estáticas legadas com produção
+  - `legacy-lp-css-background-sync` — trazer imagens de background (CSS) de LPs legadas da produção
+  - `legacy-lp-section-precos` — ligar preços globais (Strapi) em LPs estáticas legadas
+- Available skills (globais, `~/.cursor/skills`): `deco-section`, `deco-loader`, `deco-island`, `deco-app`, `deco-vtex`, `vtex-io-component`, `vtex-css`, `vtex-io-node-graphql`, `vtex-checkout`, `vtex-checkout-config`, `vtex-io-workspace-debug`, `figma-assets`, `upload-image-cloudinary`, `registrar-evidencias`
+- Skills globais ficam em `C:\Users\agencian1\.cursor\skills\{skill-name}\SKILL.md`; skills **project-scoped** (ex.: omie) ficam em `{repo}\.cursor\skills\{skill-name}\SKILL.md`
 - Follow the skill instructions exactly — they contain project-specific conventions and patterns
