@@ -228,9 +228,67 @@ EOF
 
 ---
 
-## 5. Integração
+## 5. Comentário no Runrun.it (deploy manual + hash do merge)
 
-- **`runrunit-pr-commit`**: ao iniciar/entregar uma task do omie, usar **esta** skill para nome de branch (`feat/<descricao>`), mensagem de commit **e descrição do PR** (template do omie acima, em vez do template genérico do Step F4). O restante do fluxo (comentário na task, upload de prints via Cloudinary, mover stage) segue a `runrunit-pr-commit`.
+**Contexto do omie:** nada no repositório tem **deploy automático**. Todo deploy depende do **time da Omie**. O fluxo é:
+
+1. Dev desenvolve e faz **merge na branch `master`**.
+2. A Omie é avisada (**via John**) com o **hash do merge** para publicar.
+
+Por isso, o comentário de entrega da task **precisa do hash do merge na `master`**. Sem o hash, a Omie não consegue subir.
+
+### Como obter o hash do merge
+
+Depois que o PR for mergeado na `master`:
+
+```powershell
+# Via GitHub (PR já mergeado):
+gh pr view <pr_url_ou_numero> --json mergeCommit -q .mergeCommit.oid
+
+# Ou localmente, após atualizar a master:
+git checkout master ; git pull ; git log -1 --format=%H   # hash completo
+git log -1 --format=%h                                     # hash curto (ex.: 4e5880b)
+```
+
+- Use o hash do **commit de merge na `master`** (não o da branch de feature).
+- Pode usar o hash curto (7+ chars) no comentário; se a Omie pedir, passar o completo.
+
+### Template do comentário (texto puro — Runrun.it não aceita Markdown)
+
+```
+Atualização TASK-{id} - {task title}
+
+O que foi entregue:
+- {bullet em linguagem de negócio 1}
+- {bullet em linguagem de negócio 2}
+
+Merge na master:
+Hash: {merge_hash}
+PR: {pr_url}
+
+Deploy (importante):
+Nada no repositorio tem deploy automatico. O deploy depende do time da Omie.
+Fluxo: dev faz merge na master e avisamos a Omie (via John) com o hash do
+merge acima para publicar em producao.
+
+Como validar:
+1) {passo objetivo — onde ir e o que conferir}
+2) {passo}
+
+Evidencias (prints):
+{url_1}
+{url_2}
+```
+
+- **Hash é obrigatório** para tasks do omie — é o que a Omie usa para publicar.
+- Prints: hospedar via Cloudinary (`upload-image-cloudinary` / `runrunit_upload_image_cloudinary`) e colar a `secure_url` (uma por linha).
+- Se ainda **não** houve merge na `master` (task só em review/preview), deixar claro no comentário que o merge/deploy está pendente e que o hash será enviado após o merge.
+
+---
+
+## 6. Integração
+
+- **`runrunit-pr-commit`**: ao iniciar/entregar uma task do omie, usar **esta** skill para nome de branch (`feat/<descricao>`), mensagem de commit, **descrição do PR** (template do omie, em vez do genérico do Step F4) **e comentário no Runrun.it** (template com hash do merge acima, em vez dos Templates A/B genéricos). O restante do fluxo (upload de prints via Cloudinary, mover stage) segue a `runrunit-pr-commit`.
 - Skills de implementação do omie: `component-creator`, `strapi-single-cpts`, `page-builder-section-mapper`, `section-performance-optimizer`, `frontend-performance`, `popup-form-template-creator`, `legacy-lp-*`.
 
 ## Regras
@@ -240,3 +298,4 @@ EOF
 - `[TASK-{id}]` no assunto é opcional (usar quando vier do Runrun.it).
 - Commitar com `git.exe -F .git\COMMIT_MSG_TEMP`; deixar husky/lint-staged rodar; `--no-verify` só em falha espúria e com aviso.
 - **PR:** usar o template oficial do omie (seção 4). Marcar só checkboxes verificados de fato; rodar build/lint/typecheck do `front/` antes de marcar. Confirmar a branch base do PR.
+- **Comentário no Runrun.it:** usar o template da seção 5 com o **hash do merge na `master`** (obrigatório — a Omie publica manualmente com esse hash, avisada via John). Deploy nunca é automático.
