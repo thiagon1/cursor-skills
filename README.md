@@ -14,6 +14,8 @@ Skills personalizadas para o Cursor AI, focadas em desenvolvimento VTEX, deco.cx
 | **vtex-checkout-config** | Configuração da API de Checkout VTEX — orderForm config, seller window, limpar mensagens |
 | **vtex-css** | CSS no VTEX IO — whitelist de seletores (depreciação de CSS por estrutura), CSS Handles, `useCssHandles` e API vtex.css-handles ([docs](https://bit.ly/io-css-selectors), [github](https://github.com/vtex-apps/css-handles)) |
 | **vtex-io-workspace-debug** | Abre workspace VTEX IO privado no Chrome (MCP), **espera o login manual** do usuário e volta a debugar/validar/ajustar — console, network, screenshots, viewport e loop com `vtex link` |
+| **vtex-lighthouse-evidence** | Lighthouse CLI (HTML+JSON), prints oficiais (gauges/filmstrip), extração de Core Web Vitals e PDF técnico produção × workspace (`md-to-pdf`) |
+| **vtex-site-editor-content** | Backup, seed e migração de conteúdo do Site Editor (CMS) via `pages-graphql` e mapa da vitrine — treePath, restore em workspace, Node no Windows |
 
 ### Analytics / Tracking
 
